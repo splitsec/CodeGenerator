@@ -1,0 +1,73 @@
+
+<!DOCTYPE html> 
+<html xmlns:fb="https://www.facebook.com/2008/fbml">
+<head>
+<title>New JavaScript SDK</title>
+</head>
+<body>
+
+<div id="fb-root"></div>
+<h2>Updated JS SDK example</h2>
+<div id="user-info"></div>
+<p><button id="fb-auth">...</button></p>
+ 
+<script>
+(function() {
+  var e = document.createElement('script'); e.async = true;
+  e.src = document.location.protocol + '//connect.facebook.net/ja_JP/all.js';
+  document.getElementById('fb-root').appendChild(e);
+}());
+
+window.fbAsyncInit = function() {
+  FB.init({ appId: '314394728596467',
+    status: true, 
+    cookie: true,
+    xfbml: true,
+    oauth: true
+  });
+ 
+  function updateButton(response) {
+    var button = document.getElementById('fb-auth');
+    var userInfo = document.getElementById('user-info');
+    if (response.authResponse) {
+      //user is already logged in and connected
+      FB.api('/me', function(response) {
+        userInfo.innerHTML = '<img src="https://graph.facebook.com/'
+         + response.id + '/picture" style="margin-right:5px" />'
+         + response.name;
+        button.innerHTML = 'Logout';
+      });
+
+      button.onclick = function() {
+        FB.logout(function(response) {
+          userInfo.innerHTML="";
+        });
+      };
+
+    }else{
+      //user is not connected to your app or logged out
+      button.innerHTML = 'Login';
+      button.onclick = function() {
+        FB.login(function(response) {
+          if (response.authResponse) {
+            FB.api('/me', function(response) {
+              userInfo.innerHTML = 
+                '<img src="https://graph.facebook.com/' 
+                  + response.id + '/picture" style="margin-right:5px" />'
+                  + response.name;
+            });
+          }else{
+            //user cancelled login or did not grant authorization
+          }
+        }, {scope:'email'});
+      }
+    }
+  }
+
+  // run once with current status and whenever the status changes
+  FB.getLoginStatus(updateButton);
+  FB.Event.subscribe('auth.statusChange', updateButton);
+};
+</script>
+</body> 
+</html>
